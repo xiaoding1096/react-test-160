@@ -12,6 +12,8 @@ import HomePage from 'pages/client/home';
 import BookPage from 'pages/client/book';
 import LoginPage from 'pages/client/auth/login';
 import RegisterPage from 'pages/client/auth/register';
+import { AppProvider } from 'components/context/app.context';
+import ProtectedRoute from './components/auth';
 
 const router = createBrowserRouter([
   {
@@ -30,6 +32,22 @@ const router = createBrowserRouter([
         path: "/book",
         element: <BookPage/>,
       },
+      {
+        path: "/admin",
+        element: 
+        <ProtectedRoute>
+          <div>admin</div>
+        </ProtectedRoute>,
+      },
+      {
+        path: "/checkout",
+        element: 
+        <ProtectedRoute>
+          <div>checkout</div>
+        </ProtectedRoute>
+        ,
+      },
+
     ]
   },
   {
@@ -46,6 +64,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AppProvider>
+      <RouterProvider router={router} />
+    </AppProvider>
   </StrictMode>,
 )

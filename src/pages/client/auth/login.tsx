@@ -3,6 +3,7 @@ import type { FormProps } from 'antd';
 import { Button, Checkbox, Form, Input } from 'antd';
 import { loginApi } from '@/services/api';
 import { useNavigate } from 'react-router-dom';
+import { useCurrentApp } from '@/components/context/app.context';
 
 const LoginPage = () => {
    
@@ -12,12 +13,16 @@ type FieldType = {
   password: string;
 };
 const navigate = useNavigate();
+const {setUser, setIsAuthenticated} = useCurrentApp();
 const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
   console.log('Success:', values);
   const resLogin = await loginApi(values.username, values.password)
   if(resLogin.data){
+
       console.log(resLogin.data)
       localStorage.setItem("access_token",resLogin.data.access_token)
+      setIsAuthenticated(true)
+      setUser(resLogin.data.user)
       navigate('/')
   }
 };

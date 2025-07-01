@@ -21,7 +21,7 @@ const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
   const resRegister = await registerApi(values.username, values.email, values.password, values.phone)
   if(resRegister.data){
       console.log(resRegister.data)
-      navigate('/')
+      navigate('/login')
   }
 };
 

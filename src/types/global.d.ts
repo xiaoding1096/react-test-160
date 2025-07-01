@@ -44,5 +44,9 @@ export {};
             role: string,
             avatar: string
         }
+
+        interface IFetchAccount {
+            user: IUser
+        }
     }
     
