@@ -1,19 +1,25 @@
 import React from 'react';
 import type { FormProps } from 'antd';
 import { Button, Checkbox, Form, Input } from 'antd';
+import { loginApi } from '@/services/api';
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
    
 
 type FieldType = {
-  username?: string;
-  password?: string;
-  remember?: string;
+  username: string;
+  password: string;
 };
-
-const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
+const navigate = useNavigate();
+const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
   console.log('Success:', values);
-  
+  const resLogin = await loginApi(values.username, values.password)
+  if(resLogin.data){
+      console.log(resLogin.data)
+      localStorage.setItem("access_token",resLogin.data.access_token)
+      navigate('/')
+  }
 };
 
 const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {

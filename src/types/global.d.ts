@@ -8,7 +8,7 @@ export {};
             data?: T;
         }
 
-            interface IModelPaginate<T> {
+        interface IModelPaginate<T> {
             meta: {
                 current: number;
                 pageSize: number;
@@ -17,6 +17,7 @@ export {};
             },
             results: T[]
             }
+
         interface ILogin {
             access_token: string;
             user: {
@@ -28,4 +29,12 @@ export {};
             id: string;
             }
         }
+
+        interface IRegister {
+            _id: string,
+            email: string,
+            fullName: string
+            }
+
     }
+    
