@@ -1,5 +1,5 @@
 import { FORMATE_DATE_VN } from "@/services/helper"
-import { Badge, Descriptions, Drawer } from "antd"
+import { Avatar, Badge, Descriptions, Drawer } from "antd"
 import dayjs from "dayjs"
 
 interface IProps {
@@ -21,7 +21,12 @@ const DetailUser = (props : IProps) => {
                 <Descriptions.Item label="FULL NAME" span={2}>{dataViewDetail?.fullName}</Descriptions.Item>
                 <Descriptions.Item label="EMAIL">{dataViewDetail?.email}</Descriptions.Item>
                 <Descriptions.Item label="PHONE">{dataViewDetail?.phone}</Descriptions.Item>
-                <Descriptions.Item label="ROLE" span={2}> <Badge status="processing" text={dataViewDetail?.role}/></Descriptions.Item>
+                <Descriptions.Item label="ROLE" > 
+                    <Badge status="processing" text={dataViewDetail?.role}/>
+                </Descriptions.Item>
+                <Descriptions.Item label="AVATAR" > 
+                    <Avatar size={64} src={`${import.meta.env.VITE_BACKEND_URL}/images/avatar/${dataViewDetail?.avatar}`}/>
+                </Descriptions.Item>
                 <Descriptions.Item label="CREATED AT">{dayjs(dataViewDetail?.createdAt).format(FORMATE_DATE_VN)}</Descriptions.Item>
                 <Descriptions.Item label="UPDATE AT">{dayjs(dataViewDetail?.updatedAt).format(FORMATE_DATE_VN)}</Descriptions.Item>
             </Descriptions>
