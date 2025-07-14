@@ -15,7 +15,7 @@ export {};
                 pages: number;
                 total: number;
             },
-            results: T[]
+            result: T[]
             }
 
         interface ILogin {
@@ -47,6 +47,20 @@ export {};
 
         interface IFetchAccount {
             user: IUser
+        }
+
+        interface IUserTable {
+                _id: string,
+                fullName: string,
+                email: string,
+                phone: string,
+                role: string,
+                avatar: string,
+                isActive: boolean,
+                type: string,
+                createdAt: Date,
+                updatedAt: Date,
+                
         }
     }
     

@@ -1,212 +1,159 @@
-import { PlusOutlined } from '@ant-design/icons';
+import { getUsersApi } from '@/services/api';
+import { dateRangeValidate } from '@/services/helper';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable, TableDropdown } from '@ant-design/pro-components';
 import { Button, Space, Tag } from 'antd';
-import { useRef } from 'react';
-import { FAKE_DATA } from './data';
+import { useRef, useState } from 'react';
+import DetailUser from './detail.user';
 
-const waitTimePromise = async (time: number = 100) => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve(true);
-        }, time);
-    });
-};
 
-const waitTime = async (time: number = 100) => {
-    await waitTimePromise(time);
-};
 
-type GithubIssueItem = {
-    url: string;
-    id: number;
-    number: number;
-    title: string;
-    labels: {
-        name: string;
-        color: string;
-    }[];
-    state: string;
-    comments: number;
-    created_at: string;
-    updated_at: string;
-    closed_at?: string;
-};
 
-const columns: ProColumns<GithubIssueItem>[] = [
+
+const TableUser = () => {
+    
+const [openViewDetail,setOpenViewDetail] = useState<boolean>(false)
+const [dataViewDetail, setDataViewDetail] = useState<IUserTable | null>(null)
+type TSearch = {
+    fullName : string;
+    email: string;
+    createdAtRange: string[];
+    createdAt: string;
+}
+    const columns: ProColumns<IUserTable>[] = [
+   
     {
-        dataIndex: 'index',
-        valueType: 'indexBorder',
-        width: 48,
-    },
-    {
-        title: '标题',
-        dataIndex: 'title',
-        copyable: true,
-        ellipsis: true,
-        tooltip: '标题过长会自动收缩',
-        formItemProps: {
-            rules: [
-                {
-                    required: true,
-                    message: '此项为必填项',
-                },
-            ],
+        title: 'ID',
+        align:"center",
+        hideInSearch: true,
+        dataIndex: '_id',
+        render(dom, entity, index, action, schema) {
+            return(
+                <>
+                    <a 
+                    href="#"
+                    onClick={() => {
+                        setOpenViewDetail(true)
+                        setDataViewDetail(entity)
+                        console.log(entity)
+
+                    }}
+                    >{entity._id}</a>
+                </>
+            )
         },
     },
     {
-        disable: true,
-        title: '状态',
-        dataIndex: 'state',
-        filters: true,
-        onFilter: true,
-        ellipsis: true,
-        valueType: 'select',
-        valueEnum: {
-            all: { text: '超长'.repeat(50) },
-            open: {
-                text: '未解决',
-                status: 'Error',
-            },
-            closed: {
-                text: '已解决',
-                status: 'Success',
-                disabled: true,
-            },
-            processing: {
-                text: '解决中',
-                status: 'Processing',
-            },
-        },
+        title: 'Full Name',
+        dataIndex:'fullName',
+        align:"center",
     },
     {
-        disable: true,
-        title: '标签',
-        dataIndex: 'labels',
-        search: false,
-        renderFormItem: (_, { defaultRender }) => {
-            return defaultRender(_);
-        },
-        render: (_, record) => (
-            <Space>
-                {record.labels.map(({ name, color }) => (
-                    <Tag color={color} key={name}>
-                        {name}
-                    </Tag>
-                ))}
-            </Space>
-        ),
+        title: 'Email',
+        dataIndex: 'email',
+        align:"center",
     },
     {
-        title: '创建时间',
-        key: 'showTime',
-        dataIndex: 'created_at',
-        valueType: 'date',
+        title: 'Created At',
+        dataIndex: 'createdAtRange',
+        align:"center",
+        valueType:'dateRange', 
+        hideInTable: true,
+    },
+    
+    {
+        title: 'Created At',
+        dataIndex: 'createdAt',
+        align:"center",
         sorter: true,
+        valueType: 'date',
         hideInSearch: true,
     },
     {
-        title: '创建时间',
-        dataIndex: 'created_at',
-        valueType: 'dateRange',
-        hideInTable: true,
-        search: {
-            transform: (value) => {
-                return {
-                    startTime: value[0],
-                    endTime: value[1],
-                };
-            },
+        title: 'Action',
+        align:"center",
+        hideInSearch: true,
+        render(dom, entity, index, action, schema) {
+            return(
+                <>
+                    <div style={{
+                        display:"flex",
+                        justifyContent:"center",
+                        gap:"30px"
+                    }}>
+                        <EditOutlined style={{color:"green", fontSize:"22px"}}/>
+                        <DeleteOutlined style={{color:"red", fontSize:"22px"}}/>
+                    </div>
+                </>
+            )
         },
     },
-    {
-        title: '操作',
-        valueType: 'option',
-        key: 'option',
-        render: (text, record, _, action) => [
-            <a
-                key="editable"
-                onClick={() => {
-                    action?.startEditable?.(record.id);
-                }}
-            >
-                编辑
-            </a>,
-            <a href={record.url} target="_blank" rel="noopener noreferrer" key="view">
-                查看
-            </a>,
-            <TableDropdown
-                key="actionGroup"
-                onSelect={() => action?.reload()}
-                menus={[
-                    { key: 'copy', name: '复制' },
-                    { key: 'delete', name: '删除' },
-                ]}
-            />,
-        ],
-    },
-];
-
-const TableUser = () => {
+]
     const actionRef = useRef<ActionType>();
+    const [meta, setMeta] = useState({
+        current: 1,
+        pageSize: 5,
+        pages:0,
+        total:0,
+    })
     return (
         <>
-            <ProTable<GithubIssueItem>
+            <ProTable<IUserTable, TSearch>
                 columns={columns}
                 actionRef={actionRef}
                 cardBordered
                 request={async (params, sort, filter) => {
                     console.log(sort, filter);
-                    await waitTime(2000);
-                    // const data = await (await fetch('https://proapi.azurewebsites.net/github/issues')).json()
-                    return {
-                        // data: data.data,
-                        data: FAKE_DATA as any,
-                        "page": 1,
-                        "success": true,
-                        // "total": 30
+                    let query = "";
+                    if(params){
+                        query += `current=${params.current}&pageSize=${params.pageSize}`
+                        if(params.fullName){
+                            query += `&fullName=/${params.fullName}/i`
+                        }
+                        if(params.email){
+                            query += `&email=/${params.email}/i`
+                        }
+                        const createdDateRange = dateRangeValidate(params.createdAtRange)
+                        if(createdDateRange){
+                            query += `&createdAt>=${createdDateRange[0]}&createdAt<=${createdDateRange[1]}`
+                        }
+                    }
+                    if(sort && sort.createdAt){
+                        query += `&sort=${sort.createdAt === 'ascend' ? 'createdAt' : '-createdAt'}`
                     }
 
-                }}
-                editable={{
-                    type: 'multiple',
-                }}
-                columnsState={{
-                    persistenceKey: 'pro-table-singe-demos',
-                    persistenceType: 'localStorage',
-                    defaultValue: {
-                        option: { fixed: 'right', disable: true },
-                    },
-                    onChange(value) {
-                        console.log('value: ', value);
-                    },
-                }}
-                rowKey="id"
-                search={{
-                    labelWidth: 'auto',
-                }}
-                options={{
-                    setting: {
-                        listsHeight: 400,
-                    },
-                }}
-                form={{
-                    // 由于配置了 transform，提交的参数与定义的不同这里需要转化一下
-                    syncToUrl: (values, type) => {
-                        if (type === 'get') {
-                            return {
-                                ...values,
-                                created_at: [values.startTime, values.endTime],
-                            };
+                    const resGetUsersApi = await getUsersApi(query)
+                    console.log(resGetUsersApi?.data?.meta)
+                    if(resGetUsersApi?.data){
+                        setMeta(resGetUsersApi?.data?.meta)
+                        console.log(meta)
+                    }
+                    
+                        return {
+                            // data: data.data,
+                            data: resGetUsersApi?.data?.result,
+                            "page": params.current,
+                            "success": true,
+                            "total": resGetUsersApi?.data?.meta?.total,
                         }
-                        return values;
-                    },
+                    
+
                 }}
                 pagination={{
-                    pageSize: 5,
-                    onChange: (page) => console.log(page),
+                    current:meta.current,
+                    pageSize:meta.pageSize,
+                    showSizeChanger:true,
+                    total:meta.total,
+                    showTotal:(total,range)=> {
+                        return (
+                            <div>
+                                {range[0]}-{range[1]} on {total} rows
+                            </div>
+                        )
+                    }
                 }}
-                dateFormatter="string"
+                rowKey="_id"
                 headerTitle="Table user"
                 toolBarRender={() => [
                     <Button
@@ -221,6 +168,12 @@ const TableUser = () => {
                     </Button>
 
                 ]}
+            />
+            <DetailUser
+            openViewDetail = {openViewDetail}
+            setOpenViewDetail = {setOpenViewDetail}
+            dataViewDetail = {dataViewDetail}
+            setDataViewDetail= {setDataViewDetail}
             />
         </>
     );
