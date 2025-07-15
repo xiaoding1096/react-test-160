@@ -6,6 +6,7 @@ import { ProTable, TableDropdown } from '@ant-design/pro-components';
 import { Button, Space, Tag } from 'antd';
 import { useRef, useState } from 'react';
 import DetailUser from './detail.user';
+import CreateUser from './create.user';
 
 
 
@@ -15,6 +16,7 @@ const TableUser = () => {
     
 const [openViewDetail,setOpenViewDetail] = useState<boolean>(false)
 const [dataViewDetail, setDataViewDetail] = useState<IUserTable | null>(null)
+const [openModalCreate, setOpenModalCreate] = useState<boolean>(false)
 type TSearch = {
     fullName : string;
     email: string;
@@ -97,6 +99,11 @@ type TSearch = {
         pages:0,
         total:0,
     })
+
+    const refreshTable = () => {
+        actionRef.current?.reload();
+    }
+
     return (
         <>
             <ProTable<IUserTable, TSearch>
@@ -106,6 +113,7 @@ type TSearch = {
                 request={async (params, sort, filter) => {
                     console.log(sort, filter);
                     let query = "";
+                    
                     if(params){
                         query += `current=${params.current}&pageSize=${params.pageSize}`
                         if(params.fullName){
@@ -119,6 +127,7 @@ type TSearch = {
                             query += `&createdAt>=${createdDateRange[0]}&createdAt<=${createdDateRange[1]}`
                         }
                     }
+                    query += `&sort=-createdAt`;
                     if(sort && sort.createdAt){
                         query += `&sort=${sort.createdAt === 'ascend' ? 'createdAt' : '-createdAt'}`
                     }
@@ -133,7 +142,7 @@ type TSearch = {
                         return {
                             // data: data.data,
                             data: resGetUsersApi?.data?.result,
-                            "page": params.current,
+                            "page": 1,
                             "success": true,
                             "total": resGetUsersApi?.data?.meta?.total,
                         }
@@ -141,8 +150,8 @@ type TSearch = {
 
                 }}
                 pagination={{
-                    current:meta.current,
-                    pageSize:meta.pageSize,
+                    current: meta.current,
+                    pageSize: meta.pageSize,
                     showSizeChanger:true,
                     total:meta.total,
                     showTotal:(total,range)=> {
@@ -160,7 +169,8 @@ type TSearch = {
                         key="button"
                         icon={<PlusOutlined />}
                         onClick={() => {
-                            actionRef.current?.reload();
+                            setOpenModalCreate(true)
+                            
                         }}
                         type="primary"
                     >
@@ -174,6 +184,11 @@ type TSearch = {
             setOpenViewDetail = {setOpenViewDetail}
             dataViewDetail = {dataViewDetail}
             setDataViewDetail= {setDataViewDetail}
+            />
+            <CreateUser
+                openModalCreate = {openModalCreate} 
+                setOpenModalCreate = {setOpenModalCreate}
+                refreshTable = {refreshTable}
             />
         </>
     );

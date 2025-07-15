@@ -11,7 +11,7 @@ const LoginPage = () => {
 type FieldType = {
   username: string;
   password: string;
-};
+};  
 const navigate = useNavigate();
 const {setUser, setIsAuthenticated} = useCurrentApp();
 const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
